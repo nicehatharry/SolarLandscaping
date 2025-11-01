@@ -40,8 +40,7 @@ class GeocodingApiResponse(BaseModel):
 class UtilityCompany(BaseModel):
     """Utility company information"""
     name: str
-    service_area: str = Field(..., alias="serviceArea")
-    contact_info: Optional[str] = Field(None, alias="contactInfo")
+    zipCode: str
 
     class Config:
         populate_by_name = True

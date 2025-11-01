@@ -3,7 +3,7 @@ Service for interacting with AWS S3 storage
 """
 import json
 import logging
-from typing import Dict, List, Any
+from typing import Dict, Any
 import boto3
 from botocore.exceptions import ClientError
 

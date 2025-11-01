@@ -45,23 +45,22 @@ class UtilityService:
             if self._utilities_cache is None:
                 await self._load_utilities_data()
             
+            logger.info(f"Cache: {self._utilities_cache}")
             # Look up utility company by zip code
-            utility_data = self._utilities_cache.get(normalized_zip)
+            utility_name = self._utilities_cache.get(normalized_zip)
             
-            if not utility_data:
+            if not utility_name:
                 logger.warning(f"No utility company found for zip code: {normalized_zip}")
                 # Return a default/unknown utility company
                 return UtilityCompany(
                     name="Unknown Utility Company",
-                    serviceArea=f"Zip Code {normalized_zip}",
-                    contactInfo="Please contact your local utility provider"
+                    zipCode=normalized_zip,
                 )
             
             # Parse and return utility company information
             return UtilityCompany(
-                name=utility_data.get("name", "Unknown"),
-                serviceArea=utility_data.get("service_area", normalized_zip),
-                contactInfo=utility_data.get("contact_info")
+                name=utility_name,
+                zipCode=normalized_zip
             )
             
         except Exception as error:
@@ -73,31 +72,30 @@ class UtilityService:
         Load utilities data from S3 and cache it
         
         Expected format in S3 JSON file:
-        {
-            "12345": {
-                "name": "ABC Electric Company",
-                "service_area": "Metropolitan Area",
-                "contact_info": "1-800-123-4567"
+        [
+            {
+                "button_label": "PSE&G",
+                "post_code": "08002"
             },
-            "67890": {
-                "name": "XYZ Power Corp",
-                "service_area": "Rural District",
-                "contact_info": "1-800-987-6543"
+            {
+                "button_label": "ACE",
+                "post_code": "08403"
             }
-        }
+        ]
         """
         try:
             utilities_data = await self.s3_service.read_json_file(
                 self.utilities_file_key
             )
             
+            logger.info(f"Utilities data: {utilities_data}")
             # Validate that we have a dictionary
-            if not isinstance(utilities_data, dict):
-                logger.error("Utilities data is not in expected format (dict)")
+            if not isinstance(utilities_data, list):
+                logger.error("Utilities data is not in expected format (list)")
                 self._utilities_cache = {}
                 return
             
-            self._utilities_cache = utilities_data
+            self._utilities_cache = {entry["post_code"]: entry["button_label"] for entry in utilities_data}
             logger.info(
                 f"Loaded {len(self._utilities_cache)} utility companies from S3"
             )
