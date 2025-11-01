@@ -1,12 +1,11 @@
 // API service layer for communicating with the backend
-import type { 
-  UserFormData, 
+import type {  
   GeocodingApiResponse, 
   UtilityCompany, 
   ConfirmationData 
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8000'; // import.meta.env.VITE_API_BASE_URL ||
 
 /**
  * Validates an address using the US Census Bureau Geocoding API

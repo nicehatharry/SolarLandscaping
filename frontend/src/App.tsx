@@ -1,5 +1,5 @@
 // Main application component managing routing and state
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { HomePage } from './components/HomePage';
 import { ConfirmationPage } from './components/ConfirmationPage';
 import { ThankYouPage } from './components/ThankYouPage';
