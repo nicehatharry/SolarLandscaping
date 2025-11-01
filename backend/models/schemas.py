@@ -1,7 +1,6 @@
 """
 Pydantic models for request/response validation
 """
-from typing import Optional
 from pydantic import BaseModel, Field, validator
 
 
@@ -40,7 +39,7 @@ class GeocodingApiResponse(BaseModel):
 class UtilityCompany(BaseModel):
     """Utility company information"""
     name: str
-    zipCode: str
+    zip_code: str = Field(..., alias="zipCode")
 
     class Config:
         populate_by_name = True
@@ -69,7 +68,7 @@ class ConfirmationData(BaseModel):
     @validator('assistance_program')
     def validate_assistance_program(cls, value):
         """Ensure assistance program is one of the allowed values"""
-        allowed_values = ['SNAP', 'Medicaid', 'None']
+        allowed_values = ['SNAP', 'Medicare', 'None']
         if value not in allowed_values:
             raise ValueError(f'Assistance program must be one of {allowed_values}')
         return value

@@ -18,12 +18,11 @@ export interface GeocodingApiResponse {
 
 export interface UtilityCompany {
   name: string;
-  serviceArea: string;
-  contactInfo?: string;
+  zipCode: string;
 }
 
 export interface AssistanceProgram {
-  value: 'SNAP' | 'Medicaid' | 'None';
+  value: 'SNAP' | 'Medicare' | 'None';
   label: string;
 }
 

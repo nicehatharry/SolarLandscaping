@@ -14,7 +14,7 @@ interface ConfirmationPageProps {
 
 const ASSISTANCE_PROGRAM_OPTIONS: AssistanceProgram[] = [
   { value: 'SNAP', label: 'SNAP (Supplemental Nutrition Assistance Program)' },
-  { value: 'Medicaid', label: 'Medicaid' },
+  { value: 'Medicare', label: 'Medicare' },
   { value: 'None', label: 'None' },
 ];
 
@@ -144,13 +144,8 @@ export const ConfirmationPage: React.FC<ConfirmationPageProps> = ({
                 {utilityCompany.name}
               </p>
               <p className="text-sm text-gray-600 mt-1">
-                Service Area: {utilityCompany.serviceArea}
+                Service Area: {utilityCompany.zipCode}
               </p>
-              {utilityCompany.contactInfo && (
-                <p className="text-sm text-gray-600 mt-1">
-                  Contact: {utilityCompany.contactInfo}
-                </p>
-              )}
             </div>
           </section>
 

@@ -179,8 +179,7 @@ async def submit_subscriber(data: ConfirmationData) -> SubmissionResponse:
             "recommended_address": data.recommended_address,
             "utility_company": {
                 "name": data.utility_company.name,
-                "service_area": data.utility_company.service_area,
-                "contact_info": data.utility_company.contact_info
+                "zip_code": data.utility_company.zip_code
             },
             "assistance_program": data.assistance_program
         }
