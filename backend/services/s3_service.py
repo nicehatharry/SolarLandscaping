@@ -1,128 +1,155 @@
 """
-Service for managing utility company information
+Service for interacting with AWS S3 storage
 """
+import json
 import logging
-from typing import Dict, Optional
-from models.schemas import UtilityCompany
-from services.s3_service import S3Service
+from typing import Dict, List, Any
+import boto3
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
 
-class UtilityService:
-    """Service for retrieving utility company information by zip code"""
+class S3Service:
+    """Service for reading from and writing to AWS S3"""
 
-    def __init__(self, s3_service: S3Service, utilities_file_key: str):
+    def __init__(
+        self,
+        bucket_name: str,
+        aws_access_key_id: str = None,
+        aws_secret_access_key: str = None,
+        region_name: str = "us-east-1"
+    ):
         """
-        Initialize utility service
+        Initialize S3 service
         
         Args:
-            s3_service: Instance of S3Service for data access
-            utilities_file_key: S3 key for the utilities JSON file
+            bucket_name: Name of the S3 bucket
+            aws_access_key_id: AWS access key (optional, uses IAM role if not provided)
+            aws_secret_access_key: AWS secret key (optional)
+            region_name: AWS region name
         """
-        self.s3_service = s3_service
-        self.utilities_file_key = utilities_file_key
-        self._utilities_cache: Optional[Dict[str, Dict]] = None
+        self.bucket_name = bucket_name
+        
+        # Initialize S3 client
+        if aws_access_key_id and aws_secret_access_key:
+            self.s3_client = boto3.client(
+                's3',
+                aws_access_key_id=aws_access_key_id,
+                aws_secret_access_key=aws_secret_access_key,
+                region_name=region_name
+            )
+        else:
+            # Use default credentials (IAM role, environment variables, etc.)
+            self.s3_client = boto3.client('s3', region_name=region_name)
 
-    async def get_utility_by_zip_code(self, zip_code: str) -> UtilityCompany:
+    async def read_json_file(self, file_key: str) -> Dict[str, Any]:
         """
-        Retrieve utility company information for a given zip code
+        Read a JSON file from S3
         
         Args:
-            zip_code: 5 or 9 digit zip code
+            file_key: S3 object key (file path in bucket)
             
         Returns:
-            UtilityCompany information
+            Parsed JSON data as dictionary
             
         Raises:
-            Exception: If utility company cannot be found or retrieved
+            Exception: If file cannot be read or parsed
         """
         try:
-            # Normalize zip code to 5 digits
-            normalized_zip = self._normalize_zip_code(zip_code)
-            
-            # Load utilities data if not cached
-            if self._utilities_cache is None:
-                await self._load_utilities_data()
-            
-            # Look up utility company by zip code
-            utility_data = self._utilities_cache.get(normalized_zip)
-            
-            if not utility_data:
-                logger.warning(f"No utility company found for zip code: {normalized_zip}")
-                # Return a default/unknown utility company
-                return UtilityCompany(
-                    name="Unknown Utility Company",
-                    serviceArea=f"Zip Code {normalized_zip}",
-                    contactInfo="Please contact your local utility provider"
-                )
-            
-            # Parse and return utility company information
-            return UtilityCompany(
-                name=utility_data.get("name", "Unknown"),
-                serviceArea=utility_data.get("service_area", normalized_zip),
-                contactInfo=utility_data.get("contact_info")
+            response = self.s3_client.get_object(
+                Bucket=self.bucket_name,
+                Key=file_key
             )
             
-        except Exception as error:
-            logger.error(f"Error retrieving utility company: {error}")
-            raise Exception(f"Failed to retrieve utility company: {str(error)}")
+            content = response['Body'].read().decode('utf-8')
+            data = json.loads(content)
+            
+            logger.info(f"Successfully read {file_key} from S3")
+            return data
+            
+        except ClientError as error:
+            if error.response['Error']['Code'] == 'NoSuchKey':
+                logger.warning(f"File not found in S3: {file_key}")
+                # Return empty structure if file doesn't exist
+                return {}
+            else:
+                logger.error(f"Error reading from S3: {error}")
+                raise Exception(f"Failed to read file from S3: {str(error)}")
+        except json.JSONDecodeError as error:
+            logger.error(f"Error parsing JSON from S3: {error}")
+            raise Exception(f"Invalid JSON in S3 file: {str(error)}")
 
-    async def _load_utilities_data(self) -> None:
+    async def write_json_file(
+        self,
+        file_key: str,
+        data: Dict[str, Any]
+    ) -> None:
         """
-        Load utilities data from S3 and cache it
-        
-        Expected format in S3 JSON file:
-        {
-            "12345": {
-                "name": "ABC Electric Company",
-                "service_area": "Metropolitan Area",
-                "contact_info": "1-800-123-4567"
-            },
-            "67890": {
-                "name": "XYZ Power Corp",
-                "service_area": "Rural District",
-                "contact_info": "1-800-987-6543"
-            }
-        }
-        """
-        try:
-            utilities_data = await self.s3_service.read_json_file(
-                self.utilities_file_key
-            )
-            
-            # Validate that we have a dictionary
-            if not isinstance(utilities_data, dict):
-                logger.error("Utilities data is not in expected format (dict)")
-                self._utilities_cache = {}
-                return
-            
-            self._utilities_cache = utilities_data
-            logger.info(
-                f"Loaded {len(self._utilities_cache)} utility companies from S3"
-            )
-            
-        except Exception as error:
-            logger.error(f"Error loading utilities data: {error}")
-            # Set empty cache to avoid repeated failed loads
-            self._utilities_cache = {}
-            raise Exception(f"Failed to load utilities data: {str(error)}")
-
-    def _normalize_zip_code(self, zip_code: str) -> str:
-        """
-        Normalize zip code to 5 digits
+        Write a JSON file to S3
         
         Args:
-            zip_code: Zip code (can be 5 or 9 digits with hyphen)
+            file_key: S3 object key (file path in bucket)
+            data: Data to write as JSON
             
-        Returns:
-            5-digit zip code string
+        Raises:
+            Exception: If file cannot be written
         """
-        # Remove any spaces or hyphens and take first 5 digits
-        cleaned = zip_code.replace("-", "").replace(" ", "")
-        return cleaned[:5]
+        try:
+            json_content = json.dumps(data, indent=2, ensure_ascii=False)
+            
+            self.s3_client.put_object(
+                Bucket=self.bucket_name,
+                Key=file_key,
+                Body=json_content.encode('utf-8'),
+                ContentType='application/json'
+            )
+            
+            logger.info(f"Successfully wrote {file_key} to S3")
+            
+        except ClientError as error:
+            logger.error(f"Error writing to S3: {error}")
+            raise Exception(f"Failed to write file to S3: {str(error)}")
 
-    def clear_cache(self) -> None:
-        """Clear the utilities cache to force reload on next request"""
-        self._utilities_cache = None
-        logger.info("Utilities cache cleared")
+    async def append_to_json_array(
+        self,
+        file_key: str,
+        new_item: Dict[str, Any]
+    ) -> None:
+        """
+        Append an item to a JSON array file in S3
+        If the file doesn't exist, creates it with the new item
+        
+        Args:
+            file_key: S3 object key (file path in bucket)
+            new_item: Item to append to the array
+            
+        Raises:
+            Exception: If operation fails
+        """
+        try:
+            # Read existing data
+            existing_data = await self.read_json_file(file_key)
+            
+            # If file is empty or doesn't exist, initialize as array
+            if not existing_data:
+                existing_data = []
+            
+            # Ensure we have a list
+            if not isinstance(existing_data, list):
+                logger.warning(
+                    f"File {file_key} is not an array, converting to array"
+                )
+                existing_data = [existing_data]
+            
+            # Append new item
+            existing_data.append(new_item)
+            
+            # Write back to S3
+            await self.write_json_file(file_key, existing_data)
+            
+            logger.info(f"Successfully appended item to {file_key}")
+            
+        except Exception as error:
+            logger.error(f"Error appending to JSON array: {error}")
+            raise Exception(f"Failed to append to JSON file: {str(error)}")
