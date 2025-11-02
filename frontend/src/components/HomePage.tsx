@@ -193,7 +193,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onFormSubmitSuccess }) => {
               value={formData.state}
               onChange={handleInputChange}
               required
-              placeholder="CA"
+              placeholder="NJ"
               maxLength={2}
               error={errors.state}
             />

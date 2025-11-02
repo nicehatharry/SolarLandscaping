@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 
 ALLOWED_UTILITY_COS = [
     "PSEG",
+    "PSE&G",
     "JCPL",
+    "JCP&L",
     "ACE"
 ]
 
@@ -28,7 +30,7 @@ class UtilityService:
         """
         self.s3_service = s3_service
         self.utilities_file_key = utilities_file_key
-        self._utilities_cache: Optional[Dict[str, Dict]] = None
+        self._utilities_cache: Dict[str, Dict] = {}
 
     async def get_utility_by_zip_code(self, zip_code: str) -> UtilityCompany:
         """
