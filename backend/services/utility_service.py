@@ -30,7 +30,7 @@ class UtilityService:
         """
         self.s3_service = s3_service
         self.utilities_file_key = utilities_file_key
-        self._utilities_cache: Dict[str, Dict] = {}
+        self._utilities_cache: Optional[Dict[str, Dict]] = None
 
     async def get_utility_by_zip_code(self, zip_code: str) -> UtilityCompany:
         """
@@ -53,7 +53,6 @@ class UtilityService:
             if self._utilities_cache is None:
                 await self._load_utilities_data()
             
-            logger.info(f"Cache: {self._utilities_cache}")
             # Look up utility company by zip code
             utility_name = self._utilities_cache.get(normalized_zip)
             
@@ -92,6 +91,7 @@ class UtilityService:
         ]
         """
         try:
+            self._utilities_cache = {}
             utilities_data = await self.s3_service.read_json_file(
                 self.utilities_file_key
             )
@@ -100,7 +100,7 @@ class UtilityService:
             # Validate that we have a dictionary
             if not isinstance(utilities_data, list):
                 logger.error("Utilities data is not in expected format (list)")
-                self._utilities_cache = {}
+                self._utilities_cache = None
                 return
 
             for entry in utilities_data:
@@ -114,7 +114,7 @@ class UtilityService:
         except Exception as error:
             logger.error(f"Error loading utilities data: {error}")
             # Set empty cache to avoid repeated failed loads
-            self._utilities_cache = {}
+            self._utilities_cache = None
             raise Exception(f"Failed to load utilities data: {str(error)}")
 
     def _normalize_zip_code(self, zip_code: str) -> str:
