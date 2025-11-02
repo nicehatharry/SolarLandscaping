@@ -15,7 +15,7 @@ This application was bootstrapped using Claude Sonnet 4.5. My initial concept wa
 
 The backend and data are all cloud deployed to AWS (AWS was chosen because my personal site is hosted here, so I utilized my existing account). The backend is hosted on an EC2 virtual machine with IAM access to the data, stored in S3. The UI is also cloud deployed, but permissioning issues were stopping the css from being able to resolve which resulted in a terrible user experience, so I have opted instead to exhibit the locally hosted incarnation, which is much friendlier.
 
-Submission data is also stored to S3 in JSON format, but could easily be converted to some flavor of SQL or hosted in a more specialized NoSQL service depending on future access requirements.
+Submission data is also stored to S3 in JSON format, but could easily be converted to some flavor of SQL or hosted in a more specialized NoSQL service depending on future access requirements. This information is currently only available with administrator access. I am happy to confirm application function by confirming data submitted to the service.
 
 ## for the future
 There were some requirements I was unable to squeeze into the 3h timebox (and I did go over in troubleshooting some cloud issues), so firstly I would solve those:
