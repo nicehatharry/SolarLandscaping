@@ -1,5 +1,5 @@
 """
-FastAPI backend application for utility assistance registration
+FastAPI backend application for customer registration
 """
 import logging
 import os
@@ -32,9 +32,9 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI application
 app = FastAPI(
-    title="Utility Assistance API",
-    description="API for utility assistance program registration",
-    version="1.0.0"
+    title="Solar Landscape Demo",
+    description="API for Solar Landscape customer registration",
+    version="0.0.1"
 )
 
 # Configure CORS
@@ -54,7 +54,7 @@ app.add_middleware(
 geocoding_service = GeocodingService()
 
 s3_service = S3Service(
-    bucket_name=os.getenv("AWS_S3_BUCKET_NAME", "utility-assistance-bucket"),
+    bucket_name=os.getenv("AWS_S3_BUCKET_NAME"),
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
     region_name=os.getenv("AWS_REGION", "us-east-1")
@@ -62,10 +62,10 @@ s3_service = S3Service(
 
 utility_service = UtilityService(
     s3_service=s3_service,
-    utilities_file_key=os.getenv("UTILITIES_FILE_KEY", "zip_code_and_utilities.json")
+    utilities_file_key=os.getenv("UTILITIES_FILE_KEY")
 )
 
-SUBSCRIBER_INFO_FILE_KEY = os.getenv("SUBSCRIBER_FILE_KEY", "subscriber_info.json")
+SUBSCRIBER_INFO_FILE_KEY = os.getenv("SUBSCRIBER_FILE_KEY")
 
 
 @app.get("/")
@@ -73,7 +73,7 @@ async def root() -> Dict[str, str]:
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "message": "Utility Assistance API is running"
+        "message": "Customer Registration API is running"
     }
 
 

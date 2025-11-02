@@ -8,6 +8,12 @@ from services.s3_service import S3Service
 
 logger = logging.getLogger(__name__)
 
+ALLOWED_UTILITY_COS = [
+    "PSEG",
+    "JCPL",
+    "ACE"
+]
+
 
 class UtilityService:
     """Service for retrieving utility company information by zip code"""
@@ -94,8 +100,11 @@ class UtilityService:
                 logger.error("Utilities data is not in expected format (list)")
                 self._utilities_cache = {}
                 return
-            
-            self._utilities_cache = {entry["post_code"]: entry["button_label"] for entry in utilities_data}
+
+            for entry in utilities_data:
+                # ignore utilities 
+                if entry["button_label"] in ALLOWED_UTILITY_COS:
+                    self._utilities_cache[entry["post_code"]] = entry["button_label"]
             logger.info(
                 f"Loaded {len(self._utilities_cache)} utility companies from S3"
             )

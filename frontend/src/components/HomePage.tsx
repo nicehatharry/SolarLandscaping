@@ -125,10 +125,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onFormSubmitSuccess }) => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Utility Assistance Registration
+          Solar Landscape Customer Registration
         </h1>
         <p className="text-gray-600 mb-8">
-          Please provide your information to check eligibility for utility assistance programs.
+          At Solar Landscape, our subscribers are the reason for our work. They are the consumers of our energy and the core of our community solar programs. Use this form to join in our mission to turn rooftops into revenue.
         </p>
 
         {apiError && (
@@ -220,6 +220,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onFormSubmitSuccess }) => {
             Submit Application
           </Button>
         </form>
+
+        {/* Support Information */}
+        <p className="text-sm text-gray-500 mt-6">
+          Curious what makes this page go? Check out the <a href='https://github.com/nicehatharry/SolarLandscaping'>GitHub repository</a>!
+        </p>
       </div>
     </div>
   );

@@ -37,37 +37,6 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ onReturnHome }) => {
         <p className="text-lg text-gray-600 mb-4">
           Your information has been successfully submitted and saved.
         </p>
-        
-        <p className="text-base text-gray-600 mb-8">
-          We will review your application and contact you within 3-5 business days 
-          regarding your utility assistance eligibility. If you have any questions, 
-          please don't hesitate to reach out to your utility company.
-        </p>
-
-        {/* Additional Information */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 text-left">
-          <h2 className="text-lg font-semibold text-blue-900 mb-3">
-            What Happens Next?
-          </h2>
-          <ul className="space-y-2 text-sm text-blue-800">
-            <li className="flex items-start">
-              <span className="mr-2">1.</span>
-              <span>Your information is being processed by our system</span>
-            </li>
-            <li className="flex items-start">
-              <span className="mr-2">2.</span>
-              <span>Your utility company will verify your eligibility</span>
-            </li>
-            <li className="flex items-start">
-              <span className="mr-2">3.</span>
-              <span>You will receive confirmation via mail or email</span>
-            </li>
-            <li className="flex items-start">
-              <span className="mr-2">4.</span>
-              <span>If approved, assistance will be applied to your account</span>
-            </li>
-          </ul>
-        </div>
 
         {/* Return to Home Button */}
         <Button
@@ -80,8 +49,7 @@ export const ThankYouPage: React.FC<ThankYouPageProps> = ({ onReturnHome }) => {
 
         {/* Support Information */}
         <p className="text-sm text-gray-500 mt-6">
-          Need assistance? Contact your utility company directly or visit their 
-          website for more information about assistance programs.
+          Curious what makes this page go? Check out the <a href='https://github.com/nicehatharry/SolarLandscaping'>GitHub repository</a>!
         </p>
       </div>
     </div>
